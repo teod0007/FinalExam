@@ -52,7 +52,7 @@ void Game::InitializeImpl()
   Vector4 position(0, 0, 2.5f, 0.0f);
   Vector4 lookAt = Vector4::Normalize(Vector4::Difference(Vector4(0.0f, 0.0f, 0.0f, 0.0f), position));
   Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
-
+  message = false;
   _gameCamera = new OrthographicCamera(-10.0f, 10.0f, 10.0f, -10.0f, nearPlane, farPlane, position, lookAt, up);
 
   // Create the player.
@@ -102,26 +102,25 @@ void Game::UpdateImpl(float dt)
     (*itr)->Update(dt);
   }
 
-  if (_player->GetTransform().position.x >= _fruit->GetTransform().position.x)
-	  if (_fruit->GetTransform().position.x - _player->GetTransform().position.x <= 0.5 || _player->GetTransform().position.x - _fruit->GetTransform().position.x <= 0.5)
-		  if (_fruit->GetTransform().position.y - _player->GetTransform().position.y <= 0.5 || _player->GetTransform().position.y - _fruit->GetTransform().position.y <= 0.5)
-		  {
+  if (_player->FruitCollision(_fruit->GetFruitPosition().position))
+	{
 			currentScore += 1;
 			_player->AddBodyPiece(_graphicsObject);
 
 			srand(time(NULL));
 			_fruit->GetTransform().position.y = ((rand() * 7) % 18) - 9;
 			_fruit->GetTransform().position.x = ((rand() * 11) % 18) - 9;
-		  }
+	}
 
 
   // Do bounds checking.
 
-  if (_player->GetTransform().position.x >= 10 || _player->GetTransform().position.y >= 10 || _player->GetTransform().position.x <= -10 || _player->GetTransform().position.y <= -10)
+  if (_player->GetHeadTransform().position.x >= 10 || _player->GetHeadTransform().position.y >= 10 || _player->GetHeadTransform().position.x <= -10 || _player->GetHeadTransform().position.y <= -10)
   {
-	  _objects.clear();
-	  delete _player;
-	  delete _fruit;
+	  _player->isDead() = true;
+	  /*
+	  */
+
   }
 }
 
@@ -145,6 +144,61 @@ void Game::DrawImpl(Graphics *graphics, float dt)
   std::string title = "Snake Game ---- Score :: " + std::to_string(currentScore);
 
   SDL_SetWindowTitle(_window, title.c_str());
+
+
+  if (_player->isDead() && !message)
+  {
+	  SDL_MessageBoxData* data = new SDL_MessageBoxData();
+	  data->numbuttons = 2;
+	  SDL_MessageBoxButtonData buttons[] = {
+			  { /* .flags, .buttonid, .text */        0, 0, "no" },
+			  { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" } };
+	  SDL_MessageBoxColorScheme colorScheme = {
+			  { /* .colors (.r, .g, .b) */
+				  /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+				  { 255, 0, 0 },
+				  /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+				  { 0, 255, 0 },
+				  /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+				  { 255, 255, 0 },
+				  /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+				  { 0, 0, 255 },
+				  /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+				  { 255, 0, 255 }
+			  }
+	  };
+	  data->colorScheme = &colorScheme;
+	  data->buttons = buttons;
+	  data->message = "Game Over - Play Again?";
+	  int id;
+	  if (SDL_ShowMessageBox(data, &id) < 0) {
+		  SDL_Log("Error displaying message box");
+	  }
+
+	  message = true;
+
+	  if (buttons[id].buttonid == 0)
+	  {
+		  GameEngine::Shutdown();
+
+		  return;
+	  }
+	  else //if (buttons[id].buttonid == 1)
+	  {
+
+		  currentScore = 0;
+		  _objects.clear();
+		  _player = new Player();
+		  _player->Initialize(_graphicsObject);
+		  _fruit = new Fruit();
+		  _fruit->Initialize(_graphicsObject);
+		  _player->isDead() = false;
+
+
+		  _objects.push_back(_player);
+		  _objects.push_back(_fruit);
+	  }
+  }
 }
 
 void Game::CalculateCameraViewpoint(Camera *camera)

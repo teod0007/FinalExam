@@ -14,7 +14,7 @@ public:
 
   void Update(float dt);
   void Draw(Graphics *graphics, Matrix4x4 relativeTo, float dt);
-
+  Transform& GetFruitPosition();
 protected:
   Cube *_fruitGeometry;
 

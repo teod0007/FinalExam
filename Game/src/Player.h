@@ -15,6 +15,9 @@ public:
 
   void Update(float dt);
   void Draw(Graphics *graphics, Matrix4x4 relativeTo, float dt);
+  bool FruitCollision(Vector3 fruitPosition);
+  Transform& GetHeadTransform();
+  bool& isDead();
 
   /**
   * Adds a new piece onto the end of our player.
@@ -36,6 +39,7 @@ protected:
   float _difference;
 
   bool _newBodyPieceActive;
+  bool _dead;
 
   float _moveSpeed;
 };

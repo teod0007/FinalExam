@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Cube.h"
 #include "BodyNode.h"
+#include <SDL.h>
 
 Player::~Player()
 {
@@ -24,6 +25,7 @@ void Player::Initialize(Graphics *graphics)
   // Create first node for the player.
   _body.push_back(head);
   _difference = 0.0f;
+  _dead = false;
 }
 
 void Player::AddBodyPiece(Graphics *graphics)
@@ -169,4 +171,36 @@ void Player::Draw(Graphics *graphics, Matrix4x4 relativeTo, float dt)
   {
     _body[bodyIndex]->Draw(graphics, relativeTo, dt);
   }
+}
+
+Transform& Player::GetHeadTransform()
+{
+	return _body[0]->nodeCube->GetTransform();
+}
+
+bool Player::FruitCollision(Vector3 fruitPosition)
+{
+	SDL_Rect* r = new SDL_Rect();
+
+
+	SDL_Rect rP = SDL_Rect();
+	SDL_Rect rF = SDL_Rect();
+	rP.x = _body[0]->nodeCube->GetTransform().position.x;
+	rP.y = _body[0]->nodeCube->GetTransform().position.y;
+	rP.h = 1;
+	rP.w = 1;
+	rF.x = fruitPosition.x;
+	rF.y = fruitPosition.y;
+	rF.h = 1;
+	rF.w = 1;
+
+	return SDL_IntersectRect(&rP, &rF, r);
+	
+
+}
+
+
+bool& Player::isDead()
+{
+	return _dead;
 }

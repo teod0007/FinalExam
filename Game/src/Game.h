@@ -28,6 +28,7 @@ protected:
   Player *_player;
   Fruit *_fruit;
   int currentScore;
+  bool message;
 
 
   Camera *_gameCamera;

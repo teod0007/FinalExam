@@ -48,3 +48,9 @@ void Fruit::Draw(Graphics *graphics, Matrix4x4 relativeTo, float dt)
 {
   _fruitGeometry->Draw(graphics, relativeTo, dt);
 }
+
+Transform& Fruit::GetFruitPosition()
+{
+
+	return _fruitGeometry->GetTransform();
+}
